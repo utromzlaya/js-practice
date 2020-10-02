@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🐶 DOGS API 🐶</title>
+  </head>
+  <body>
+    <!-- https://github.com/visionmedia/superagent -->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/superagent/4.1.0/superagent.min.js"
+      integrity="sha512-LJaxxgpiq7SihGQ21nejROsll6FRrgbs0Wxtgqb5x+Q0CJICA3vt8hlBxSD8NLsO+Yabgg3B7ARexiijKiojGg=="
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      console.log(
+        "%c 🐶 DOGS APP STARTED!",
+        "color: green; font-weight: bold;"
+      );
+      //функция для сортировки/группировки пород по буквам, пример из документации reduce 
+      function groupBy(objectArray, property) {
+         return objectArray.reduce(function (acc, obj) {
+            var key = obj[property];
+            if (!acc[key]) {
+                acc[key] = [];
+                           }
+                acc[key].push(obj);
+            return acc;
+            }, {});
+            }
+
+      function breedsDataCallback(err, res) {
+                    if (err) {
+                        alert(err);
+                    return;
+                             }
+                    var dogsString = res.body;
+
+                    // сохранение айди пород
+                    var arrOfIds=[];
+                    var idDogs = dogsString.map(function (dog){
+                      var smallArrOfIds = [];
+                      smallArrOfIds.push(dog.name,dog.id);
+                      arrOfIds.push(smallArrOfIds);
+
+                      return arrOfIds;
+                    })
+
+
+
+
+                    //вывод по 2 породы по буквам
+                    dogsString = dogsString.map(function (dog) {
+
+                    return dog.name;
+                                                                 })
+                    .map(function(el){
+                    var a ={};
+                    a.letter = el.charAt(0);
+                    a.dogsname = el;
+                    return a;
+                    });
+
+                    var groupedDogs = groupBy(dogsString, 'letter' );
+                    var groupedDogsSuper = Object.values(groupedDogs).map(arr=>arr.slice(0,2)).map(arr=>arr.map(obj=>obj=obj.dogsname)).map(el=>el.join(", "))
+                    ;
+                    groupedDogsSuper = groupedDogsSuper.map(el=>el.charAt(0)+": "+el)
+                    .join("\n");
+                    
+                   
+
+                    console.log(groupedDogsSuper);
+                    alert("PLEASE CHECK ONE OF THE DOGS: "+"\n"+ groupedDogsSuper); // (1)
+
+                    var dogId = prompt("WHICH OF THE DOGS YOU WOULD LIKE TO KNOW ABOUT?", "Barbet").split(" ");//получение названия породы от юзера 
+                    //тут я ищу айди сохраненное в массиве айди всех пород на строчках 39-47
+                    var dogIdnumber = arrOfIds.filter(
+                      function(smallarr){
+                        if(smallarr[0]==dogId)
+                        return dogId=smallarr[1];
+                      }
+                    )
+                      dogId = dogIdnumber[0][1];//вот тут криво косо добыт айди
+                      alert(dogId);
+                    
+                                            }  
+
+
+            superagent
+        .get("https://api.thedogapi.com/v1/breeds")
+        .end(breedsDataCallback);
+
+      console.log(
+        "%c 🐶 SYNC CODE FINISHED!",
+        "color: green; font-weight: bold;"
+      );
+    </script>
+  </body>
+</html>
+
+<!--
+  1. Реализовать вывод в alert по 2 породы на каждую букву. (1)
+     Пример вывода:
+     A: Affenpinscher, Afghan Hound
+     B: Barbet, Basenji
+     C: Cairn Terrier, Cane Corso
+     ... и так далее ...
+  2. После вывода alert запросить у пользователя породу собаки через prompt
+  3. Используя ендпоинт `https://api.thedogapi.com/v1/images/search?include_breed=1&breed_id=${dogId}` ---- https://docs.thedogapi.com/example-by-breed
+     получить детальную информацию о собаке по id породы
+  4. Вывести информацию о породе в alert
+  * используем только GET запросы, как в примере выше.
+-->
+
+<!--
+  User story:
+  Я как пользователь хочу увидеть в сообщении список пород собак,
+  после закрытия окна с сообщением хочу увидеть новое окно в которое могу ввести название интересующей меня породы,
+  после введения породы и нажатия на ок хочу получить новое окно с информацией о введенной породе.
+ -->

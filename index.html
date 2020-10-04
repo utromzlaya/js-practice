@@ -17,86 +17,59 @@
         "%c 🐶 DOGS APP STARTED!",
         "color: green; font-weight: bold;"
       );
-      //функция для сортировки/группировки пород по буквам, пример из документации reduce 
-      function groupBy(objectArray, property) {
-         return objectArray.reduce(function (acc, obj) {
-            var key = obj[property];
-            if (!acc[key]) {
-                acc[key] = [];
-                           }
-                acc[key].push(obj);
-            return acc;
-            }, {});
-            }
+      var apiPromise = new Promise( function(res,rej){
+          var dogsInfo = superagent.get('https://api.thedogapi.com/v1/breeds');
+          res(dogsInfo);
+      }); 
+               
+      var shomMeDogsString = function(){
+        return apiPromise
+          .then(function(res){
+            var dogs = res.body;
+            var dogsString = res.body
+            .map(dog=>dog.name)
 
-      function breedsDataCallback(err, res) {
-                    if (err) {
-                        alert(err);
-                    return;
-                             }
-                    var dogsString = res.body;
+            .reduce(function(acc,next){
+            var repeatedNames = acc.filter(function(breedName){
+            return breedName.charAt(0) === next.charAt(0)})
 
-                    // сохранение айди пород
-                    var arrOfIds=[];
-                    var idDogs = dogsString.map(function (dog){
-                      var smallArrOfIds = [];
-                      smallArrOfIds.push(dog.name,dog.id);
-                      arrOfIds.push(smallArrOfIds);
+             if(repeatedNames.length >= 2) {
+               return acc
+              } else {
+                return acc.concat(next)
+              }}, [])
 
-                      return arrOfIds;
-                    })
+            .join("\n");
 
+            console.log(dogsString);
+            alert(dogsString);
 
+            var choosedBreed = prompt('Choose your breed please: ', 'Vizsla');
+            console.log("%c chosen breed --->> " + choosedBreed,
+            "color: blue;");
 
+            var temp = dogs.findIndex(obj=>obj.name == choosedBreed);
+            var dogId = dogs[temp].id;
+            console.log("%c id of dog breed --->> " + dogId,
+            "color: red;");
+          })
+          .then((res)=>
+            console.log(
+            "%c 🐶 SYNC CODE FINISHED!",
+            "color: green; font-weight: bold;"
+            ))
+          .catch(err=>
+            console.log('ERROR')
+          );         
+        
+        };
 
-                    //вывод по 2 породы по буквам
-                    dogsString = dogsString.map(function (dog) {
+        shomMeDogsString();
 
-                    return dog.name;
-                                                                 })
-                    .map(function(el){
-                    var a ={};
-                    a.letter = el.charAt(0);
-                    a.dogsname = el;
-                    return a;
-                    });
-
-                    var groupedDogs = groupBy(dogsString, 'letter' );
-                    var groupedDogsSuper = Object.values(groupedDogs).map(arr=>arr.slice(0,2)).map(arr=>arr.map(obj=>obj=obj.dogsname)).map(el=>el.join(", "))
-                    ;
-                    groupedDogsSuper = groupedDogsSuper.map(el=>el.charAt(0)+": "+el)
-                    .join("\n");
-                    
-                   
-
-                    console.log(groupedDogsSuper);
-                    alert("PLEASE CHECK ONE OF THE DOGS: "+"\n"+ groupedDogsSuper); // (1)
-
-                    var dogId = prompt("WHICH OF THE DOGS YOU WOULD LIKE TO KNOW ABOUT?", "Barbet").split(" ");//получение названия породы от юзера 
-                    //тут я ищу айди сохраненное в массиве айди всех пород на строчках 39-47
-                    var dogIdnumber = arrOfIds.filter(
-                      function(smallarr){
-                        if(smallarr[0]==dogId)
-                        return dogId=smallarr[1];
-                      }
-                    )
-                      dogId = dogIdnumber[0][1];//вот тут криво косо добыт айди
-                      alert(dogId);
-                    
-                                            }  
-
-
-            superagent
-        .get("https://api.thedogapi.com/v1/breeds")
-        .end(breedsDataCallback);
-
-      console.log(
-        "%c 🐶 SYNC CODE FINISHED!",
-        "color: green; font-weight: bold;"
-      );
     </script>
   </body>
 </html>
+
 
 <!--
   1. Реализовать вывод в alert по 2 породы на каждую букву. (1)

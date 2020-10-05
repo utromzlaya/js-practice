@@ -17,17 +17,20 @@
         "%c 🐶 DOGS APP STARTED!",
         "color: green; font-weight: bold;"
       );
+
+
+
       var apiPromise = new Promise( function(res,rej){
           var dogsInfo = superagent.get('https://api.thedogapi.com/v1/breeds');
           res(dogsInfo);
       }); 
                
       var shomMeDogsString = function(){
-        return apiPromise
+         apiPromise
           .then(function(res){
             var dogs = res.body;
             var dogsString = res.body
-            .map(dog=>dog.name)
+            .map(dog=>dog.name.charAt(0)+ ": "+ dog.name)
 
             .reduce(function(acc,next){
             var repeatedNames = acc.filter(function(breedName){
@@ -38,7 +41,6 @@
               } else {
                 return acc.concat(next)
               }}, [])
-
             .join("\n");
 
             console.log(dogsString);
@@ -52,12 +54,32 @@
             var dogId = dogs[temp].id;
             console.log("%c id of dog breed --->> " + dogId,
             "color: red;");
+            
+            return dogId;
           })
+          .then(function(dogId){
+            superagent.get('https://api.thedogapi.com/v1/images/search?include_breed=1&breed_id='+`${dogId}`)
+              .then(function(res){
+                var  dogsBreedAbout = [];
+
+                var tempBreedInfo = res.body[0].breeds
+                .map(function(obj){
+                for (const [key, value] of Object.entries(obj)) {
+                  dogsBreedAbout.push(`${key}: ${value}`)
+                  }});
+
+                alert(dogsBreedAbout.join("\n"));
+              })
+          })
+
+
           .then((res)=>
             console.log(
             "%c 🐶 SYNC CODE FINISHED!",
             "color: green; font-weight: bold;"
             ))
+
+
           .catch(err=>
             console.log('ERROR')
           );         

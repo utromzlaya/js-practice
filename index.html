@@ -6,7 +6,6 @@
     <title>🐶 DOGS API 🐶</title>
   </head>
   <body>
-    <!-- https://github.com/visionmedia/superagent -->
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/superagent/4.1.0/superagent.min.js"
       integrity="sha512-LJaxxgpiq7SihGQ21nejROsll6FRrgbs0Wxtgqb5x+Q0CJICA3vt8hlBxSD8NLsO+Yabgg3B7ARexiijKiojGg=="
@@ -30,30 +29,33 @@
           .then(function(res){
             var dogs = res.body;
             var dogsString = res.body
-            .map(dog=>dog.name.charAt(0)+ ": "+ dog.name)
+            .map(dog=>dog.name)
+            .reduce(function (acc, currBreed) {
+                      var firstChar = currBreed.charAt(0).toUpperCase();
 
-            .reduce(function(acc,next){
-            var repeatedNames = acc.filter(function(breedName){
-            return breedName.charAt(0) === next.charAt(0)})
+                      if (acc[firstChar]) {
+                        if (acc[firstChar].length < 2) {
+                          acc[firstChar].push(currBreed);
+                        }
+                      } else {
+                        acc[firstChar] = [];
+                        acc[firstChar].push(currBreed);
+                      }
 
-             if(repeatedNames.length >= 2) {
-               return acc
-              } else {
-                return acc.concat(next)
-              }}, [])
-            .join("\n");
+                      return acc;
+                  }, {});
+
+              dogsString = Object.keys(dogsString).reduce(function(acc, currChar) {
+                return acc + currChar + ': ' + dogsString[currChar].join(', ') + '\n';
+              }, '');
 
             console.log(dogsString);
             alert(dogsString);
 
             var choosedBreed = prompt('Choose your breed please: ', 'Vizsla');
-            console.log("%c chosen breed --->> " + choosedBreed,
-            "color: blue;");
 
             var temp = dogs.findIndex(obj=>obj.name == choosedBreed);
             var dogId = dogs[temp].id;
-            console.log("%c id of dog breed --->> " + dogId,
-            "color: red;");
             
             return dogId;
           })
@@ -65,25 +67,20 @@
                 var tempBreedInfo = res.body[0].breeds
                 .map(function(obj){
                 for (const [key, value] of Object.entries(obj)) {
-                  dogsBreedAbout.push(`${key}: ${value}`)
+                  dogsBreedAbout.push(`${key}: ${JSON.stringify(value)}`)
                   }});
 
                 alert(dogsBreedAbout.join("\n"));
               })
           })
-
-
           .then((res)=>
             console.log(
             "%c 🐶 SYNC CODE FINISHED!",
             "color: green; font-weight: bold;"
             ))
-
-
           .catch(err=>
             console.log('ERROR')
-          );         
-        
+          );              
         };
 
         shomMeDogsString();
@@ -91,25 +88,3 @@
     </script>
   </body>
 </html>
-
-
-<!--
-  1. Реализовать вывод в alert по 2 породы на каждую букву. (1)
-     Пример вывода:
-     A: Affenpinscher, Afghan Hound
-     B: Barbet, Basenji
-     C: Cairn Terrier, Cane Corso
-     ... и так далее ...
-  2. После вывода alert запросить у пользователя породу собаки через prompt
-  3. Используя ендпоинт `https://api.thedogapi.com/v1/images/search?include_breed=1&breed_id=${dogId}` ---- https://docs.thedogapi.com/example-by-breed
-     получить детальную информацию о собаке по id породы
-  4. Вывести информацию о породе в alert
-  * используем только GET запросы, как в примере выше.
--->
-
-<!--
-  User story:
-  Я как пользователь хочу увидеть в сообщении список пород собак,
-  после закрытия окна с сообщением хочу увидеть новое окно в которое могу ввести название интересующей меня породы,
-  после введения породы и нажатия на ок хочу получить новое окно с информацией о введенной породе.
- -->

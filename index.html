@@ -17,74 +17,80 @@
         "color: green; font-weight: bold;"
       );
 
+      var apiPromise = new Promise(function (res, rej) {
+        var dogsInfo = superagent.get("https://api.thedogapi.com/v1/breeds");
+        res(dogsInfo);
+      });
 
-
-      var apiPromise = new Promise( function(res,rej){
-          var dogsInfo = superagent.get('https://api.thedogapi.com/v1/breeds');
-          res(dogsInfo);
-      }); 
-               
-      var shomMeDogsString = function(){
-         apiPromise
-          .then(function(res){
+      var shomMeDogsString = function () {
+        apiPromise
+          .then(function (res) {
             var dogs = res.body;
             var dogsString = res.body
-            .map(dog=>dog.name)
-            .reduce(function (acc, currBreed) {
-                      var firstChar = currBreed.charAt(0).toUpperCase();
+              .map((dog) => dog.name)
+              .reduce(function (acc, currBreed) {
+                var firstChar = currBreed.charAt(0).toUpperCase();
 
-                      if (acc[firstChar]) {
-                        if (acc[firstChar].length < 2) {
-                          acc[firstChar].push(currBreed);
-                        }
-                      } else {
-                        acc[firstChar] = [];
-                        acc[firstChar].push(currBreed);
-                      }
+                if (acc[firstChar]) {
+                  if (acc[firstChar].length < 2) {
+                    acc[firstChar].push(currBreed);
+                  }
+                } else {
+                  acc[firstChar] = [];
+                  acc[firstChar].push(currBreed);
+                }
 
-                      return acc;
-                  }, {});
+                return acc;
+              }, {});
 
-              dogsString = Object.keys(dogsString).reduce(function(acc, currChar) {
-                return acc + currChar + ': ' + dogsString[currChar].join(', ') + '\n';
-              }, '');
+            dogsString = Object.keys(dogsString).reduce(function (
+              acc,
+              currChar
+            ) {
+              return (
+                acc + currChar + ": " + dogsString[currChar].join(", ") + "\n"
+              );
+            },
+            "");
 
             console.log(dogsString);
             alert(dogsString);
 
-            var choosedBreed = prompt('Choose your breed please: ', 'Vizsla');
+            var choosedBreed = prompt("Choose your breed please: ", "Vizsla");
 
-            var temp = dogs.findIndex(obj=>obj.name == choosedBreed);
+            var temp = dogs.findIndex((obj) => obj.name == choosedBreed);
             var dogId = dogs[temp].id;
-            
+
             return dogId;
           })
-          .then(function(dogId){
-            superagent.get('https://api.thedogapi.com/v1/images/search?include_breed=1&breed_id='+`${dogId}`)
-              .then(function(res){
-                var  dogsBreedAbout = [];
+          .then(function (dogId) {
+            superagent
+              .get(
+                "https://api.thedogapi.com/v1/images/search?include_breed=1&breed_id=" +
+                  `${dogId}`
+              )
+              .then(function (res) {
+                var dogsBreedAbout = [];
 
-                var tempBreedInfo = res.body[0].breeds
-                .map(function(obj){
-                for (const [key, value] of Object.entries(obj)) {
-                  dogsBreedAbout.push(`${key}: ${JSON.stringify(value)}`)
-                  }});
+                var tempBreedInfo = res.body[0].breeds.map(function (obj) {
+                  for (const [key, value] of Object.entries(obj)) {
+                    dogsBreedAbout.push(`${key}: ${JSON.stringify(value)}`);
+                  }
+                });
 
                 alert(dogsBreedAbout.join("\n"));
-              })
+              });
           })
-          .then((res)=>
+          .then((res) =>
             console.log(
-            "%c 🐶 SYNC CODE FINISHED!",
-            "color: green; font-weight: bold;"
-            ))
-          .catch(err=>
-            console.log('ERROR')
-          );              
-        };
+              "%c 🐶 SYNC CODE FINISHED!",
+              "color: green; font-weight: bold;"
+            )
+          )
+          .catch((err) => console.log("ERROR"));
+      };
 
-        shomMeDogsString();
-
+      shomMeDogsString();
     </script>
   </body>
 </html>
